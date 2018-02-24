@@ -18,20 +18,12 @@ namespace LoanApplications
         {
             log.Info("C# HTTP trigger function processed a request.");
 
-            // parse query parameter
-            string name = req.GetQueryNameValuePairs()
-                .FirstOrDefault(q => String.Compare(q.Key, "name", StringComparison.OrdinalIgnoreCase) == 0)
-                .Value;
+            var application = await 
+                req.Content.ReadAsAsync<LoanApplication>();
 
-            // Get request body
-            dynamic data = await req.Content.ReadAsAsync<object>();
+            log.Info($"Application received : {application.Name} {application.Age}");
 
-            // Set name to query string or body data
-            name = name ?? data?.name;
-
-            return name == null
-                ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
-                : req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
+            return req.CreateResponse(HttpStatusCode.OK, $"Loan application submitted for {application.Name}");
         }
     }
 }
