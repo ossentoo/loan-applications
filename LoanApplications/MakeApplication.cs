@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -14,7 +12,9 @@ namespace LoanApplications
         [FunctionName("MakeApplication")]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
-            HttpRequestMessage req, TraceWriter log)
+            HttpRequestMessage req, 
+            [Queue("loan-applications")] IAsyncCollector<LoanApplication> messageQueue,
+            TraceWriter log)
         {
             log.Info("C# HTTP trigger function processed a request.");
 
@@ -22,6 +22,8 @@ namespace LoanApplications
                 req.Content.ReadAsAsync<LoanApplication>();
 
             log.Info($"Application received : {application.Name} {application.Age}");
+
+            await messageQueue.AddAsync(application);
 
             return req.CreateResponse(HttpStatusCode.OK, $"Loan application submitted for {application.Name}");
         }
